@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Data visualization with ggplot2</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Mine Çetinkaya-Rundel" />
+    <meta name="date" content="2019-03-15" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/rladies.css" rel="stylesheet" />
+    <link href="libs/remark-css/rladies-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Data visualization with ggplot2
+## R-Ladies Edinburgh
+### Mine Çetinkaya-Rundel
+### 15 March 2019
+
+---
+
+
+
+
+class: center, middle
+
+# Welcome to R-Ladies Edinburgh!
+
+---
+
+class: center, middle
+
+# Data visualization
+
+---
+
+## Data visualization
+
+&gt; *"The simple graph has brought more information to the data analyst’s mind than any other device." — John Tukey*
+
+- Data visualization is the creation and study of the visual representation of data.
+- There are many tools for visualizing data (R is one of them), and many approaches/systems within R for making data visualizations (**ggplot2** is one of them, and that's what we're going to use).
+
+---
+
+## ggplot2 `\(\in\)` tidyverse
+
+.pull-left[
+![](img/ggplot2-part-of-tidyverse.png)
+]
+.pull-right[
+- **ggplot2** is tidyverse's data visualization package
+- The `gg` in "ggplot2" stands for Grammar of Graphics
+- It is inspired by the book **Grammar of Graphics** by Leland Wilkinson &lt;sup&gt;†&lt;/sup&gt;
+- A grammar of graphics is a tool that enables us to concisely describe the components of a graphic
+![](img/grammar-of-graphics.png)
+]
+
+---
+
+## Install the tidyverse
+
+- Run this only if it's your first time using `tidyverse` on your computer
+
+
+```r
+install.packages("tidyverse")
+```
+
+- Load the tidyverse
+
+
+```r
+library("tidyverse")
+```
+
+---
+
+class: center, middle
+
+# Workshop materials
+
+---
+
+## RStudio Cloud: 
+
+Go to RStudio Cloud at
+
+[bit.ly/rladies-edi](http://bit.ly/rladies-edi)
+  
+to access the R Markdown file we'll be working off of
+
+---
+
+## Datasets
+
+
+```r
+load("rladies_ggplot2_datasets.rda")
+```
+
+* Transit ride data
+    + `rides_df`: one row per ride
+    + `daily_df`: daily summary of rides
+    + `hourly_df`: hourly summary of rides
+  
+* Durham registered voter data
+    + `durham_voters_df`: one row per voter
+
+---
+
+class: center, middle
+
+# Why ggplot2?
+
+---
+
+## Exploratory Power
+
+* Graphics "pit of success"
+* Explore data quickly
+* Refine plots to be publication quality
+* See discussions of ggplot2 vs base R
+    + http://nssdeviations.com/episode-12-the-new-bayesian-vs-frequentist
+
+---
+
+## Conceptually Cohesive
+
+* Based on The Grammar of Graphics by L. Wilkinson and others
+* Principles and patterns
+* Very complex plots from simple building blocks
+    + https://vita.had.co.nz/papers/layered-grammar.pdf
+
+---
+
+## Dominance
+
+* The most prominent static graphics package in R
+* Help is easy to find
+* Developers are contibuting extensions
+
+---
+
+class: center, middle
+
+# Conceptual ggplot2
+
+---
+
+## The basics
+
+* map variables to aethestics
+* add "geoms" for visual representation layers
+* scales can be independently managed
+* legends are automatically created
+* statistics are sometimes calculated by geoms
+
+---
+
+class: center, middle
+
+# Basic ggplot2 syntax
+
+---
+
+## The required elements
+
+* DATA
+* MAPPING
+* GEOM
+
+---
+
+## Bulding up your plot
+
+
+```r
+ggplot(data = daily_df)
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-4-1.png)&lt;!-- --&gt;
+
+---
+
+## Bulding up your plot
+
+
+```r
+ggplot(data = daily_df, mapping = aes(x = ride_date, y = n_rides))
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+
+---
+
+## Bulding up your plot
+
+
+```r
+ggplot(data = daily_df, mapping = aes(x = ride_date, y = n_rides)) + 
+  geom_point()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
+
+---
+
+## Mappings can be at the `geom` level
+
+
+```r
+ggplot(data = daily_df) +
+  geom_point(mapping = aes(x = ride_date, y = n_rides))
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+
+---
+
+## Parameters can be unnamed
+
+
+```r
+ggplot(daily_df, aes(x = ride_date, y = n_rides)) +
+  geom_point()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
+---
+
+## Data can be passed in
+
+
+```r
+daily_df %&gt;%
+  ggplot(aes(x = ride_date, y = n_rides)) +
+    geom_point()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+
+---
+
+## Data can be passed in
+
+
+```r
+hourly_df %&gt;%
+  ggplot(aes(x = hour, y = n_rides)) +
+    geom_point()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+---
+
+## Mapping is more than x and y
+
+Color by days of the week
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_point()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+
+---
+
+## Mapping is more than x and y
+
+Size by number of riders
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, size = n_riders)) +
+  geom_point()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
+
+---
+
+## Adjusting transparency
+
+Size by number of riders
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, size = n_riders)) +
+  geom_point(alpha = 0.5)
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
+
+---
+
+## Variable creation on the fly...
+
+Color by weekday / weekend
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, 
+       color = day_of_week %in% c("Sat", "Sun"))) +
+  geom_point()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
+
+---
+
+## Variable creation on the fly...
+
+Color by weekday / weekend
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, 
+       color = day_of_week %in% c("Sat", "Sun"))) +
+  geom_point() +
+  labs(color = "Weekend")
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
+
+---
+
+## ... or passed in
+
+
+```r
+daily_df %&gt;%
+  mutate(day_type = if_else(day_of_week %in% c("Sat", "Sun"),
+                            "Weekend",
+                            "Weekday")) %&gt;%
+  ggplot(aes(x = ride_date, y = n_rides, color = day_type)) +
+    geom_point()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-16-1.png)&lt;!-- --&gt;
+
+---
+
+class: center, middle
+
+# Common early pitfalls
+
+---
+
+## Mappings that aren't
+
+
+```r
+ggplot(data = daily_df) +
+  geom_point(aes(x = ride_date, y = n_rides, color = "blue"))
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
+
+---
+
+## Mappings that aren't
+
+
+```r
+ggplot(data = daily_df) +
+  geom_point(aes(x = ride_date, y = n_rides), color = "blue")
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
+
+---
+
+## + and %&gt;%
+
+What is wrong with the following?
+
+
+```r
+daily_df %&gt;%
+  mutate(day_type = if_else(day_of_week %in% c("Sat", "Sun"),
+                            "Weekend",
+                            "Weekday")) %&gt;%
+  ggplot(aes(x = ride_date, y = n_rides, color = day_type)) %&gt;%
+    geom_point()
+```
+
+---
+
+## Basic plot exercise
+
+Plot the number of unique routes per day over time, colored by day of week (`n_unique_routes`).
+
+---
+
+## Basic plot exercise
+
+
+```r
+ggplot(data = daily_df, 
+       aes(x = ride_date, y = n_unique_routes, color = day_of_week)) +
+  geom_point() 
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-20-1.png)&lt;!-- --&gt;
+
+---
+
+class: center, middle
+
+# The power of layers 
+
+---
+
+## Basic plot
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides)) +
+  geom_point() 
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-21-1.png)&lt;!-- --&gt;
+
+---
+
+## Two layers!
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides)) +
+  geom_point() +
+  geom_line()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-22-1.png)&lt;!-- --&gt;
+
+---
+
+## Iterate on layers
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides)) +
+  geom_point() + 
+  geom_smooth(span = 0.1) # try changing span
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-23-1.png)&lt;!-- --&gt;
+
+---
+
+## The power of groups
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_point() + 
+  geom_line()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-24-1.png)&lt;!-- --&gt;
+
+---
+
+## Now we've got it
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_smooth(span = 0.2, se = FALSE)
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-25-1.png)&lt;!-- --&gt;
+
+---
+
+## Control data by layer
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_point(data = filter(daily_df,
+                           !(day_of_week %in% c("Sat", "Sun")) 
+                           &amp; n_rides &lt; 200),
+             size = 5, color = "gray") +
+  geom_point()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-26-1.png)&lt;!-- --&gt;
+
+---
+
+## Control data by layer
+
+.small[
+
+```r
+low_weekdays_df &lt;- daily_df %&gt;%
+  filter(!(day_of_week %in% c("Sat", "Sun")) &amp; n_rides &lt; 100)
+
+ggplot(daily_df, aes(x = ride_date, y = n_rides, 
+                     color = day_of_week, label = ride_date)) +
+  geom_point(data = low_weekdays_df, size = 5, color = "gray") +
+  geom_text(data = low_weekdays_df, aes(y = n_rides + 15), 
+            size = 2, color = "black") +
+  geom_point()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
+]
+
+---
+
+## Other geoms to layer
+
+There are a number of other geoms besides `geom_point()`, `geom_line()`, `geom_smooth()`, and `geom_text()`.
+
+More info: https://ggplot2.tidyverse.org/reference/
+
+---
+
+class: center, middle
+
+# The power of facets
+
+---
+
+## facet_wrap
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides)) +
+  geom_point() + 
+  geom_line() +
+  facet_wrap( ~ day_of_week)
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
+
+---
+
+## facet_grid
+
+.small[
+
+```r
+durham_voters_df %&gt;%
+  group_by(race_code, gender_code, age) %&gt;%
+  summarize(n_voters = n(), n_rep = sum(party == 'REP')) %&gt;%
+  filter(gender_code %in% c("F", "M") &amp; 
+         race_code %in% c("W", "B", "A") &amp;
+         age != "Age &lt; 18 Or Invalid Birth Date") %&gt;%
+  ggplot(aes(x = age, y = n_voters)) +
+    geom_bar(stat = "identity") +
+    facet_grid(race_code ~ gender_code)
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
+]
+
+---
+
+## Free scales
+
+
+```r
+durham_voters_df %&gt;%
+  group_by(race_code, gender_code, age) %&gt;%
+  summarize(n_voters = n(), n_rep = sum(party == "REP")) %&gt;%
+  filter(gender_code %in% c("F", "M") &amp; 
+         race_code %in% c("W", "B", "A") &amp;
+         age != "Age &lt; 18 Or Invalid Birth Date") %&gt;%
+  ggplot(aes(x = age, y = n_voters)) +
+    geom_bar(stat = "identity") +
+    facet_grid(race_code ~ gender_code, scales = "free_y")
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
+
+---
+
+## Facets + layers
+
+Code on the next slide
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-31-1.png)&lt;!-- --&gt;
+
+---
+
+## Facets + layers
+
+Note: better to use gather
+
+
+```r
+durham_voters_df %&gt;%
+  group_by(race_code, gender_code, age) %&gt;%
+  summarize(n_voters = n(),
+            n_rep = sum(party == 'REP')) %&gt;%
+  filter(gender_code %in% c("F", "M") &amp; 
+         race_code %in% c("W", "B", "A") &amp;
+         age != "Age &lt; 18 Or Invalid Birth Date") %&gt;%
+  mutate(age_cat = as.numeric(as.factor(age))) %&gt;%
+  ggplot(aes(x = age, y = n_voters)) +
+    geom_point() +
+    geom_line(aes(x = age_cat)) +
+    geom_line(aes(x = age_cat, y = n_rep), color = "red") +
+    geom_point(aes(y = n_rep), color = "red") +
+    facet_grid(race_code ~ gender_code, scales = "free_y") +
+    expand_limits(y = 0) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+---
+
+---
+
+class: center, middle
+
+# Everyday conveniences
+
+---
+
+## Labels and titles
+
+
+```r
+ggplot(daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_smooth(span = 0.2, se = FALSE) +
+  xlab("") +
+  ylab("# of Transit Rides") +
+  ggtitle("Transit Rides over time by Day of Week") +
+  scale_color_discrete("Day of Week")
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
+
+---
+
+class: center, middle
+
+# Scales and legends
+
+---
+
+## Scale transformation
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_point() +
+  scale_y_reverse()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
+
+---
+
+## Scale transformation
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_point() +
+  scale_y_sqrt()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
+
+---
+
+## Scale details
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_point() +
+  scale_y_continuous(breaks = c(0, 200, 500))
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-36-1.png)&lt;!-- --&gt;
+
+---
+
+class: center, middle
+
+# Themes and refinements
+
+---
+
+## Overall Themes
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_point() +
+  theme_bw()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
+
+---
+
+## Overall Themes
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_point() +
+  theme_dark()
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
+
+---
+
+## Changing Details
+
+
+```r
+ggplot(data = daily_df, aes(x = ride_date, y = n_rides, color = day_of_week)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+![](rladies-edi-ggplot2_files/figure-html/unnamed-chunk-39-1.png)&lt;!-- --&gt;
+
+---
+
+## Themes Vignette
+
+To really master themes:
+
+http://docs.ggplot2.org/dev/vignettes/themes.html
+
+---
+
+class: center, middle
+
+# Learn More
+
+---
+
+## Online Docs
+
+* Books: 
+  - R for Data Science by Grolemund and Wickham
+  - ggplot2 by Wickham
+* [ggplot2.tidyverse.org](https://ggplot2.tidyverse.org/)
+* [ggplot2 Cheat sheet](https://github.com/rstudio/cheatsheets/blob/master/data-visualization-2.1.pdf)
+
+---
+
+## Contributed extensions
+
+Check it out!
+
+http://www.ggplot2-exts.org/
+
+---
+
+class: center, middle
+
+# Any other questions about ggplot2?
+
+---
+
+## Thanks
+
+Thanks to Elaine McVey and Sheila Saia for sharing their slides from previous R-Ladies RTP meetups!
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
